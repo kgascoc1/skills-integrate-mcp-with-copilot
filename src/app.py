@@ -25,7 +25,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 
@@ -108,16 +108,16 @@ app.mount("/static", StaticFiles(directory=os.path.join(Path(__file__).parent,
 def on_startup():
     create_db_and_tables()
 
-# Create a default admin user if none exists (development convenience)
-with Session(engine) as session:
-    stmt = select(User)
-    exists = session.exec(stmt).first()
-    if not exists:
-        admin = User(email="admin@mergington.edu",
-                     hashed_password=get_password_hash("adminpass"),
-                     role="admin")
-        session.add(admin)
-        session.commit()
+    # Create a default admin user if none exists (development convenience)
+    with Session(engine) as session:
+        stmt = select(User)
+        exists = session.exec(stmt).first()
+        if not exists:
+            admin = User(email="admin@mergington.edu",
+                         hashed_password=get_password_hash("adminpass"),
+                         role="admin")
+            session.add(admin)
+            session.commit()
 
 
 # In-memory activity database
